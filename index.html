@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Cafe — Khajpura, Patna</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Cormorant+Garamond:wght@300;400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--cream:#FDF6EC;--gold:#C9964A;--gold2:#E8B96A;--deep:#1A0F00;--muted:#8B6A4A;--wa:#25D366}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--deep);font-family:'DM Sans',sans-serif;color:var(--cream);overflow-x:hidden}
+.nav{position:fixed;top:1rem;left:50%;transform:translateX(-50%);z-index:100;background:rgba(26,15,0,.92);backdrop-filter:blur(20px);border:1px solid rgba(201,150,74,.25);border-radius:50px;padding:.4rem 1rem;display:flex;gap:.2rem;max-width:94vw;overflow-x:auto;white-space:nowrap}
+.nav a{font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:rgba(253,246,236,.65);text-decoration:none;padding:.3rem .7rem;border-radius:50px}
+.nav a:hover{color:var(--gold);background:rgba(201,150,74,.12)}
+.bubble{position:fixed;bottom:1.5rem;right:1.2rem;z-index:200;background:linear-gradient(135deg,#25D366,#128C7E);color:#fff;border:none;border-radius:50px;padding:.9rem 1.3rem;font:600 .85rem 'DM Sans';cursor:pointer;display:flex;gap:.6rem;align-items:center;box-shadow:0 8px 30px rgba(37,211,102,.4)}
+.cnt{background:#fff;color:#128C7E;border-radius:50%;min-width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:300;opacity:0;pointer-events:none;transition:.3s;backdrop-filter:blur(4px)}
+.ov.open{opacity:1;pointer-events:all}
+.dr{position:fixed;right:0;top:0;bottom:0;width:min(440px,100vw);background:linear-gradient(160deg,#1A0F00,#0D0600);border-left:1px solid rgba(201,150,74,.2);z-index:301;transform:translateX(100%);transition:transform .4s;display:flex;flex-direction:column}
+.dr.open{transform:none}
+.dh{padding:1.2rem 1.5rem;border-bottom:1px solid rgba(201,150,74,.15);display:flex;justify-content:space-between;align-items:center}
+.dh h3{font-family:'Playfair Display',serif;color:var(--gold);font-size:1.25rem}
+.x{background:none;border:1px solid rgba(201,150,74,.3);color:var(--cream);border-radius:50%;width:34px;height:34px;cursor:pointer}
+.db{flex:1;overflow-y:auto;padding:1rem}
+.empty{text-align:center;padding:2rem 1rem;color:var(--muted);font-family:'Cormorant Garamond',serif;font-size:1.1rem}
+.row{display:flex;align-items:center;gap:.8rem;padding:.8rem;margin-bottom:.5rem;background:rgba(201,150,74,.06);border-radius:12px;border:1px solid rgba(201,150,74,.1)}
+.row .i{flex:1}.row .n{font-size:.88rem;font-weight:500}.row .p{font-size:.82rem;color:var(--gold);font-family:'Playfair Display',serif;font-weight:700}
+.q{display:flex;align-items:center;gap:.4rem;background:rgba(0,0,0,.4);border-radius:8px;padding:.2rem .4rem}
+.q button{background:none;border:none;color:var(--gold);cursor:pointer;font-size:1.1rem;font-weight:700;width:22px}
+.form{margin-top:1rem;padding:1rem;border:1px solid rgba(201,150,74,.15);border-radius:14px;background:rgba(201,150,74,.04)}
+.form h4{font-family:'Playfair Display',serif;color:var(--gold);margin-bottom:.7rem;font-size:1rem}
+.modes{display:grid;grid-template-columns:repeat(3,1fr);gap:.4rem;margin-bottom:.8rem}
+.modes button{background:none;border:1px solid rgba(201,150,74,.3);color:var(--cream);border-radius:10px;padding:.6rem .2rem;font:500 .75rem 'DM Sans';cursor:pointer}
+.modes button.on{background:var(--gold);color:var(--deep);font-weight:700}
+.form label{display:block;font-size:.72rem;color:var(--gold2);margin:.6rem 0 .25rem;letter-spacing:.05em}
+.form input,.form select,.form textarea{width:100%;background:rgba(0,0,0,.4);border:1px solid rgba(201,150,74,.25);color:var(--cream);border-radius:8px;padding:.6rem;font:.85rem 'DM Sans'}
+.note{font-size:.75rem;color:var(--gold2);background:rgba(201,150,74,.1);padding:.5rem .7rem;border-radius:8px;margin-bottom:.4rem}
+.df{padding:1rem 1.5rem;border-top:1px solid rgba(201,150,74,.15);background:rgba(201,150,74,.05)}
+.tl{display:flex;justify-content:space-between;font-size:.85rem;color:rgba(253,246,236,.7);margin-bottom:.3rem}
+.tl.big{font-family:'Playfair Display',serif;font-size:1.15rem;color:var(--cream);margin:.5rem 0 .8rem}.tl.big b{color:var(--gold)}
+.send{width:100%;background:linear-gradient(135deg,#25D366,#128C7E);color:#fff;border:none;border-radius:12px;padding:1rem;font:600 .95rem 'DM Sans';cursor:pointer}
+.send:disabled{opacity:.4;cursor:not-allowed}
+#hero{min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;text-align:center;padding:5rem 1.5rem 3rem;background:radial-gradient(ellipse 80% 60% at 50% 30%,rgba(201,150,74,.14),transparent 70%),radial-gradient(ellipse 40% 40% at 20% 70%,rgba(107,26,26,.3),transparent 60%),var(--deep)}
+.badge{display:inline-block;font-size:.65rem;letter-spacing:.35em;text-transform:uppercase;color:var(--gold);border:1px solid rgba(201,150,74,.4);padding:.5rem 1.4rem;border-radius:50px;margin-bottom:1.8rem}
+.logo{font-family:'Playfair Display',serif;font-size:clamp(3.2rem,11vw,6rem);font-weight:900;line-height:1}
+.logo i{color:var(--gold);text-shadow:0 0 80px rgba(201,150,74,.5)}
+.sub{font-family:'Cormorant Garamond',serif;font-weight:300;letter-spacing:.3em;font-size:1.4rem;color:rgba(253,246,236,.7);margin:.8rem 0 1.5rem}
+.chips{display:flex;flex-wrap:wrap;gap:.6rem;justify-content:center;max-width:720px;margin:2rem auto 0}
+.chips a{font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--cream);text-decoration:none;padding:.55rem 1.2rem;border:1px solid rgba(253,246,236,.18);border-radius:50px;transition:.3s}
+.chips a:hover{background:var(--gold);color:var(--deep);border-color:var(--gold)}
+.ms{padding:5rem 1.5rem}.ms:nth-of-type(odd){background:#0D0600}.ms:nth-of-type(even){background:#120A00}
+.mi{max-width:1100px;margin:0 auto}
+.mh{display:flex;align-items:center;gap:1.5rem;margin-bottom:2rem}
+.mh .l{flex:1;height:1px;background:linear-gradient(90deg,var(--gold),transparent)}.mh .l:last-child{transform:rotate(180deg)}
+.mh h2{font-family:'Playfair Display',serif;font-size:clamp(1.8rem,5vw,3rem);font-weight:900;white-space:nowrap}
+.g{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1px;background:rgba(201,150,74,.1);border:1px solid rgba(201,150,74,.1);border-radius:16px;overflow:hidden}
+.it{background:rgba(26,15,0,.95);padding:.9rem 1.2rem;display:flex;justify-content:space-between;align-items:center;gap:.6rem;flex-wrap:wrap}
+.it:hover{background:rgba(201,150,74,.08)}
+.it .nm{font-family:'Cormorant Garamond',serif;font-size:1.08rem;font-weight:600}
+.pr{display:flex;gap:.4rem;flex-wrap:wrap}
+.ab{background:none;border:1px solid rgba(201,150,74,.45);color:var(--gold);border-radius:8px;padding:.3rem .6rem;cursor:pointer;font:700 .8rem 'Playfair Display',serif;transition:.2s}
+.ab:hover,.ab.on{background:var(--gold);color:var(--deep)}
+#order{background:var(--cream);color:#2D1A0A;padding:5rem 1.5rem;text-align:center}
+.lab{font-size:.65rem;letter-spacing:.5em;text-transform:uppercase;color:var(--gold);margin-bottom:1rem}
+.ttl{font-family:'Playfair Display',serif;font-size:clamp(2.2rem,6vw,4rem);font-weight:900;margin-bottom:1rem}
+.ttl em{color:var(--gold)}
+.dsc{font-family:'Cormorant Garamond',serif;font-size:1.15rem;color:var(--muted);max-width:560px;margin:0 auto 2rem;line-height:1.7}
+.oc{display:flex;flex-wrap:wrap;gap:1rem;justify-content:center;max-width:800px;margin:0 auto}
+.oc a{flex:1;min-width:170px;max-width:240px;background:var(--deep);color:var(--cream);border-radius:20px;padding:1.6rem 1rem;text-decoration:none;display:flex;flex-direction:column;gap:.5rem;align-items:center;transition:.3s}
+.oc a:hover{transform:translateY(-6px);background:#075E54}
+.oc b{font-family:'Playfair Display',serif;font-size:1.05rem}.oc small{font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;opacity:.7}
+.info{display:flex;flex-wrap:wrap;gap:.7rem;justify-content:center;margin-top:1.5rem}
+.info span{background:#fff;border:1px solid rgba(201,150,74,.3);border-radius:50px;padding:.5rem 1.1rem;font-size:.8rem}
+#map{background:#080400;padding:4rem 1.5rem;text-align:center}
+#map .ttl{color:var(--cream)}
+.mc{max-width:800px;margin:1.5rem auto 0;border-radius:20px;overflow:hidden;border:1px solid rgba(201,150,74,.2)}
+.mc iframe{width:100%;height:360px;border:0;display:block}
+.gm{display:inline-block;margin-top:1.2rem;background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--deep);text-decoration:none;border-radius:50px;padding:.7rem 1.6rem;font-size:.85rem;font-weight:700}
+footer{background:#050300;color:rgba(253,246,236,.45);text-align:center;padding:2.5rem 1.5rem 6rem;font-size:.8rem}
+footer .fl{font-family:'Playfair Display',serif;font-size:1.5rem;color:var(--gold);font-style:italic;margin-bottom:.5rem}
+.toast{position:fixed;bottom:5.5rem;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(201,150,74,.97);color:var(--deep);padding:.7rem 1.4rem;border-radius:50px;font-size:.85rem;font-weight:600;z-index:400;opacity:0;transition:.3s;pointer-events:none;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%)}
+.fi{opacity:0;transform:translateY(30px);transition:opacity .8s,transform .8s}.fi.v{opacity:1;transform:none}
+@media(max-width:600px){.nav a{font-size:.6rem;padding:.25rem .5rem}.g{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="toast" id="toast"></div>
+<nav class="nav"><a href="#menu-momos">🥟 Momos</a><a href="#menu-chinese">🍜 Chinese</a><a href="#menu-pizza">🍕 Pizza</a><a href="#menu-shakes">🥤 Shakes</a><a href="#menu-water">💧 Water</a><a href="#order">Order</a></nav>
+
+<button class="bubble" onclick="toggleCart()">🛒 Cart <span class="cnt" id="cnt">0</span></button>
+<div class="ov" id="ov" onclick="toggleCart()"></div>
+<div class="dr" id="dr">
+  <div class="dh"><h3>🛒 Aapka Cart</h3><button class="x" onclick="toggleCart()">✕</button></div>
+  <div class="db">
+    <div id="items"></div>
+    <div class="form">
+      <h4>Order ka tarika chuno</h4>
+      <div class="modes" id="modes">
+        <button data-m="delivery" class="on">🛵 Delivery</button>
+        <button data-m="takeaway">🛍️ Takeaway</button>
+        <button data-m="dinein">🍽️ Dine-in</button>
+      </div>
+      <div class="note" id="modeNote">🛵 Delivery 2 km radius ke andar hoti hai. Delivery charge ₹30.</div>
+      <label>Aapka Naam</label><input id="fName" placeholder="Naam likhein">
+      <div id="addrBox"><label>Delivery Address</label><textarea id="fAddr" rows="2" placeholder="Ghar / landmark / area"></textarea></div>
+      <div id="pplBox" style="display:none"><label>Kitne log aayenge?</label><select id="fPpl"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6+</option></select></div>
+      <label id="timeLab">Kitni der me chahiye?</label>
+      <select id="fTime"><option>Jaldi se jaldi</option><option>15 minute me</option><option>30 minute me</option><option>45 minute me</option><option>1 ghante me</option></select>
+    </div>
+  </div>
+  <div class="df">
+    <div class="tl"><span>Items Total</span><span id="sub">₹0</span></div>
+    <div class="tl" id="delRow"><span>🛵 Delivery Charge</span><span id="del">₹30</span></div>
+    <div class="tl big"><span>Total</span><b id="tot">₹0</b></div>
+    <button class="send" id="send" onclick="sendOrder()" disabled>💬 WhatsApp pe Order Bhejein</button>
+  </div>
+</div>
+
+<section id="hero">
+  <div>
+    <div class="badge">✦ Khajpura, Patna ✦</div>
+    <div class="logo"><i>Smart</i> Cafe</div>
+    <div class="sub">MOMOS · CHINESE · SHAKES</div>
+    <p style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:rgba(253,246,236,.6)">Quality Ingredients ✦ Great Taste ✦ Happy You</p>
+    <div class="chips" id="chips"></div>
+  </div>
+</section>
+
+<div id="menu"></div>
+
+<section id="order">
+  <p class="lab">✦ Abhi Mangwao ✦</p>
+  <h2 class="ttl">Order <em>Karein</em></h2>
+  <p class="dsc">Cart se order bhejo ya seedha WhatsApp karo. Delivery 2 km radius me, sirf ₹30 charge. Takeaway aur Dine-in bhi available!</p>
+  <div class="oc">
+    <a href="https://wa.me/919060016435?text=Namaste%20Smart%20Cafe!%20Mujhe%20order%20karna%20hai." target="_blank"><span style="font-size:2rem">💬</span><b>WhatsApp</b><small>Direct Order</small></a>
+    <a href="tel:+919060016435"><span style="font-size:2rem">📞</span><b>Call Karein</b><small>+91 90600 16435</small></a>
+  </div>
+  <div class="info"><span>🛵 Delivery: 2 km radius · ₹30</span><span>🛍️ Takeaway</span><span>🍽️ Dine-in</span></div>
+</section>
+
+<section id="map">
+  <p class="lab">✦ Humara Pata ✦</p>
+  <h2 class="ttl">Humse <em>Milein</em></h2>
+  <p style="color:rgba(253,246,236,.7);font-family:'Cormorant Garamond',serif;font-size:1.1rem">📍 Pillar no. 21, near Reliance Smart Bazaar,<br>Ashokpuri, Khajpura, Patna, Bihar 800014</p>
+  <div class="mc"><iframe src="https://maps.google.com/maps?q=Smart+Cafe+Pillar+21+Ashokpuri+Khajpura+Patna&output=embed&z=16" allowfullscreen loading="lazy"></iframe></div>
+  <a class="gm" href="https://maps.app.goo.gl/LkcTbTxp31p9iFDe7" target="_blank">🗺️ Google Maps pe Kholo</a>
+</section>
+
+<footer>
+  <div class="fl">Smart Cafe</div>
+  <p>Khajpura, Patna ✦ Har bite me khushi</p>
+  <p style="margin-top:.8rem">📞 +91 90600 16435</p>
+  <p style="margin-top:1rem;font-size:.7rem;opacity:.6">© 2026 Smart Cafe. All rights reserved.</p>
+</footer>
+
+<script>
+// Item: [name, price] ya [name, [[label, price], ...]]
+const M=[
+["momos","🥟","Veg Momos","Veg Momo",[["Steam",[["5pc",50],["10pc",100]]],["Fry",[["5pc",55],["10pc",110]]],["Chilly",[["5pc",80],["10pc",160]]],["Kurkure",[["5pc",80],["10pc",160]]],["Afgani",[["5pc",100],["10pc",200]]]]],
+["paneermomos","🥟","Paneer Momos","Paneer Momo",[["Steam",[["5pc",60],["10pc",120]]],["Fry",[["5pc",65],["10pc",130]]],["Chilly",[["5pc",90],["10pc",180]]],["Kurkure",[["5pc",90],["10pc",180]]],["Afgani",[["5pc",110],["10pc",220]]]]],
+["chickenmomos","🥟","Chicken Momos","Chicken Momo",[["Steam",[["5pc",70],["10pc",140]]],["Fry",[["5pc",75],["10pc",150]]],["Chilly",[["5pc",100],["10pc",200]]],["Kurkure",[["5pc",100],["10pc",200]]],["Afgani",[["5pc",120],["10pc",240]]]]],
+["chinese","🍜","Chinese","",[["Chicken Chilly",[["Half",129],["Full",249]]],["Chicken Lollypop",[["Half",149],["Full",269]]],["Paneer Chilly",[["Half",119],["Full",219]]],["Baby Corn Chilly",[["Half",119],["Full",219]]],["Mushroom Chilly",[["Half",119],["Full",219]]],["Potato Chilly",[["Half",99],["Full",179]]],["Honey Potato Chilly",[["Half",119],["Full",179]]],["Manchurian",[["Half",99],["Full",179]]],["Veg Noodles",[["Half",79],["Full",149]]],["Paneer Noodles",[["Half",89],["Full",159]]],["Chicken Noodles",[["Half",99],["Full",169]]],["Veg Fried Rice",[["Half",79],["Full",149]]],["Paneer Fried Rice",[["Half",99],["Full",159]]],["Chicken Fried Rice",[["Half",99],["Full",169]]],["Lachha Paratha",40]]],
+["pizza","🍕","Pizza","",[["Mix Veg Pizza",149],["Corn Capsicum Pizza",159],["Paneer Pizza",169],["Chicken Pizza",199],["Extra Cheese",30]]],
+["burger","🍔","Burger","",[["Veg Burger",69],["Paneer Burger",99],["Chicken Burger",99],["Extra Cheese",20]]],
+["sandwich","🥪","Sandwich","",[["Veg Sandwich",79],["Corn Capsicum Sandwich",89],["Tandoori Paneer Sandwich",99],["Chicken Sandwich",99],["Extra Cheese",20]]],
+["maggi","🍝","Maggi & Pasta","",[["Maggi",49],["Veg Maggi",69],["Corn Butter Maggi",79],["White Sauce Pasta",99],["Red Sauce Pasta",99],["Extra Chicken (Pasta)",30]]],
+["snacks","🍟","Corn, Fries & Chicken Fry","",[["Sweet Corn",49],["Masala Sweet Corn",59],["French Fries",69],["Peri Peri French Fries",79],["Masala French Fries",89],["Chicken Popcorn",99],["Chicken Wings Fry",129],["Chicken Leg Fry",149]]],
+["shakes","🥤","Shakes","",[["Vanilla Shake",89],["Chocolate Shake",99],["Kitkat Shake",119],["Oreo Shake",119],["Kitkat Oreo Mud",139],["Strawberry Shake",99],["Butterscotch Shake",99],["Mango Shake",99],["Blueberry Shake",109],["Pineapple Shake",99],["Brownie Shake",149],["Caramel Butterscotch Shake",139]]],
+["mocktail","🍹","Mocktails","",[["Mint Mojito",79],["Blue Ocean",79],["Orange Mojito",79],["Green Apple",79],["Watermelon",79],["Kala Khata",79],["Fresh Lime Soda (Sweet/Salt)",79]]],
+["coffee","☕","Coffee","",[["Cold Coffee",100],["Cold Coffee with Icecream",120],["Hazelnut Cold Coffee",120],["Caramel Cold Coffee",120],["Black Coffee (Hot)",50],["Hot Coffee",50],["Hazelnut Coffee (Hot)",60],["Caramel Coffee (Hot)",60]]],
+["water","💧","Water","",[["Water Bottle",[["500 ml",10],["1 Litre",20]]]]],
+["icecream","🍨","Ice Cream","Icecream",[["Vanilla",[["Single",40],["Double",70]]],["Strawberry",[["Single",40],["Double",70]]],["Chocolate",[["Single",45],["Double",80]]],["Butter Scotch",[["Single",45],["Double",80]]],["Tutti Frutti",[["Single",45],["Double",80]]],["Mango",[["Single",45],["Double",80]]],["Keshar Pista",[["Single",45],["Double",80]]],["Black Currant",[["Single",50],["Double",90]]],["Blind Love",[["Single",50],["Double",90]]],["Brownie with Icecream",129],["Tribal Scoop",119]]]
+];
+
+// ===== MENU RENDER =====
+const menuEl=document.getElementById('menu'),chips=document.getElementById('chips');
+M.forEach(([id,em,title,prefix,items],ci)=>{
+  const sec=document.createElement('section');sec.className='ms';sec.id='menu-'+id;
+  sec.innerHTML=`<div class="mi"><div class="mh fi"><div class="l"></div><span style="font-size:1.8rem">${em}</span><h2>${title}</h2><div class="l"></div></div><div class="g fi">`+
+  items.map(([n,v])=>{
+    const vars=Array.isArray(v)?v:[["",v]];
+    const base=(prefix?prefix+' ':'')+n;
+    return `<div class="it"><span class="nm">${n}</span><div class="pr">`+vars.map(([l,p])=>`<button class="ab" data-n="${base}${l?' ('+l+')':''}" data-p="${p}">${l?l+' ':''}₹${p} +</button>`).join('')+`</div></div>`;
+  }).join('')+`</div></div>`;
+  menuEl.appendChild(sec);
+  if(!id.endsWith('momos')||id==='momos'){const a=document.createElement('a');a.href='#menu-'+id;a.textContent=em+' '+(id==='momos'?'Momos':title);chips.appendChild(a);}
+});
+menuEl.addEventListener('click',e=>{const b=e.target.closest('.ab');if(!b)return;add(b.dataset.n,+b.dataset.p,b);});
+
+// ===== CART =====
+const cart={};let mode='delivery';const DEL=30;
+const $=id=>document.getElementById(id);
+function beep(f=700){try{const c=new(window.AudioContext||window.webkitAudioContext)(),o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=f;g.gain.setValueAtTime(.15,c.currentTime);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+.12);o.start();o.stop(c.currentTime+.12)}catch(e){}}
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000)}
+function add(n,p,b){beep(800);cart[n]=cart[n]?{p,q:cart[n].q+1}:{p,q:1};b.classList.add('on');setTimeout(()=>b.classList.remove('on'),300);render();toast('✓ '+n+' added!')}
+$('items').addEventListener('click',e=>{const b=e.target.closest('button[data-k]');if(!b)return;beep(500);const k=b.dataset.k;cart[k].q+=+b.dataset.d;if(cart[k].q<=0)delete cart[k];render()});
+function totals(){const e=Object.values(cart);const sub=e.reduce((s,x)=>s+x.p*x.q,0);const cnt=e.reduce((s,x)=>s+x.q,0);const del=mode==='delivery'&&cnt?DEL:0;return{sub,cnt,del,tot:sub+del}}
+function render(){
+  const t=totals(),en=Object.entries(cart);
+  $('cnt').textContent=t.cnt;$('sub').textContent='₹'+t.sub;$('del').textContent='₹'+DEL;$('tot').textContent='₹'+t.tot;
+  $('delRow').style.display=mode==='delivery'?'flex':'none';$('send').disabled=!t.cnt;
+  $('items').innerHTML=en.length?en.map(([k,{p,q}])=>`<div class="row"><div class="i"><div class="n">${k}</div><div class="p">₹${p} × ${q} = ₹${p*q}</div></div><div class="q"><button data-k="${k}" data-d="-1">−</button><span>${q}</span><button data-k="${k}" data-d="1">+</button></div></div>`).join(''):'<div class="empty"><span style="display:block;font-size:2.5rem">🛒</span>Cart khali hai!<br><small>Menu se items add karein</small></div>';
+}
+function toggleCart(){beep(450);$('dr').classList.toggle('open');$('ov').classList.toggle('open')}
+
+// ===== ORDER MODE =====
+const modeInfo={
+  delivery:{note:'🛵 Delivery 2 km radius ke andar hoti hai. Delivery charge ₹30.',time:'Kitni der me chahiye (delivery)?',name:'🛵 Delivery'},
+  takeaway:{note:'🛍️ Takeaway: order ready hone par aap aake le jaayein. Koi extra charge nahi.',time:'Kitni der me lene aaoge?',name:'🛍️ Takeaway'},
+  dinein:{note:'🍽️ Dine-in: cafe me baithkar khaayein. Koi extra charge nahi.',time:'Kitni der me khane aaoge?',name:'🍽️ Dine-in'}
+};
+$('modes').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;mode=b.dataset.m;
+  [...$('modes').children].forEach(x=>x.classList.toggle('on',x===b));
+  $('modeNote').textContent=modeInfo[mode].note;$('timeLab').textContent=modeInfo[mode].time;
+  $('addrBox').style.display=mode==='delivery'?'block':'none';$('pplBox').style.display=mode==='dinein'?'block':'none';
+  render()});
+
+// Order ko owner ke dashboard (/admin) ke liye save karta hai. Fail ho jaye to bhi WhatsApp order chalega.
+function saveOrder(name,addr){
+  try{
+    fetch('/api/orders',{method:'POST',headers:{'Content-Type':'application/json'},keepalive:true,
+      body:JSON.stringify({name,mode,addr,time:$('fTime').value,people:$('fPpl').value,
+        items:Object.entries(cart).map(([n,{p,q}])=>({n,p,q}))})}).catch(()=>{});
+  }catch(e){}
+}
+
+function sendOrder(){
+  const t=totals();if(!t.cnt)return;
+  const name=$('fName').value.trim(),addr=$('fAddr').value.trim();
+  if(!name){toast('Pehle apna naam likhein 🙏');$('fName').focus();return}
+  if(mode==='delivery'&&!addr){toast('Delivery ke liye address likhein 📍');$('fAddr').focus();return}
+  let m=`Namaste Smart Cafe! ☕\n\n*Order Type:* ${modeInfo[mode].name}\n*Naam:* ${name}\n\n*Mera Order:*\n━━━━━━━━━━━━━━\n`;
+  Object.entries(cart).forEach(([k,{p,q}])=>m+=`• ${k} × ${q} = ₹${p*q}\n`);
+  m+=`━━━━━━━━━━━━━━\nItems Total: ₹${t.sub}\n`;
+  if(mode==='delivery')m+=`Delivery Charge: ₹${DEL}\n`;
+  m+=`💰 *Total: ₹${t.tot}*\n\n`;
+  if(mode==='delivery')m+=`📍 *Address:* ${addr}\n⏰ *Chahiye:* ${$('fTime').value}\n`;
+  if(mode==='takeaway')m+=`⏰ *Lene aayenge:* ${$('fTime').value}\n`;
+  if(mode==='dinein')m+=`👥 *Log:* ${$('fPpl').value}\n⏰ *Aayenge:* ${$('fTime').value}\n`;
+  m+=`\nPlease confirm karein! 🙏`;
+  saveOrder(name,addr);
+  beep(900);window.open('https://wa.me/919060016435?text='+encodeURIComponent(m),'_blank');
+}
+
+// ===== SCROLL FADE =====
+const obs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('v')}),{threshold:.05});
+document.querySelectorAll('.fi').forEach(el=>obs.observe(el));
+render();
+</script>
+</body>
+</html>

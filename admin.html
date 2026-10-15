@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>Smart Cafe — Orders</title>
+<style>
+:root{--cream:#FDF6EC;--gold:#C9964A;--deep:#1A0F00}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--deep);color:var(--cream);font-family:system-ui,-apple-system,'Segoe UI',sans-serif;min-height:100vh}
+.login{max-width:360px;margin:20vh auto 0;padding:1.5rem;text-align:center}
+.login h1{color:var(--gold);margin-bottom:1rem}
+input{width:100%;padding:.8rem;border-radius:10px;border:1px solid rgba(201,150,74,.4);background:rgba(0,0,0,.4);color:var(--cream);font-size:1rem;margin-bottom:.8rem}
+button{cursor:pointer;font:inherit}
+.btn{width:100%;padding:.8rem;border:none;border-radius:10px;background:var(--gold);color:var(--deep);font-weight:700}
+.err{color:#ff8a80;font-size:.85rem;min-height:1.2rem;margin-top:.5rem}
+header{position:sticky;top:0;background:#0D0600;border-bottom:1px solid rgba(201,150,74,.25);padding:.8rem 1rem;display:flex;justify-content:space-between;align-items:center;gap:.5rem;z-index:5}
+header h1{font-size:1.1rem;color:var(--gold)}
+header .r{display:flex;gap:.5rem;align-items:center;font-size:.8rem}
+.sm{background:none;border:1px solid rgba(201,150,74,.4);color:var(--cream);border-radius:8px;padding:.35rem .7rem;font-size:.8rem}
+.tabs{display:flex;gap:.5rem;padding:.8rem 1rem 0}
+.tabs button{flex:1;padding:.55rem;border-radius:10px;border:1px solid rgba(201,150,74,.3);background:none;color:var(--cream)}
+.tabs button.on{background:var(--gold);color:var(--deep);font-weight:700}
+#list{padding:1rem;display:grid;gap:.8rem;max-width:760px;margin:0 auto}
+.card{border:1px solid rgba(201,150,74,.25);background:rgba(201,150,74,.06);border-radius:14px;padding:1rem}
+.card.new{border-color:#25D366;box-shadow:0 0 0 1px #25D366}
+.card.done{opacity:.55}
+.top{display:flex;justify-content:space-between;gap:.5rem;flex-wrap:wrap;margin-bottom:.5rem}
+.tag{font-size:.7rem;padding:.2rem .6rem;border-radius:50px;background:rgba(201,150,74,.2);color:var(--gold);font-weight:700}
+.tm{font-size:.75rem;color:rgba(253,246,236,.55)}
+.nm{font-weight:700;font-size:1.05rem}
+.ln{font-size:.9rem;padding:.15rem 0}
+.meta{font-size:.85rem;color:rgba(253,246,236,.75);margin-top:.5rem;line-height:1.5}
+.tot{margin-top:.6rem;font-size:1.1rem;font-weight:800;color:var(--gold)}
+.act{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.8rem}
+.act button,.act a{padding:.5rem .8rem;border-radius:8px;border:1px solid rgba(201,150,74,.4);background:none;color:var(--cream);font-size:.8rem;text-decoration:none}
+.act .go{background:var(--gold);color:var(--deep);font-weight:700;border-color:var(--gold)}
+.empty{text-align:center;color:rgba(253,246,236,.5);padding:3rem 1rem}
+</style>
+</head>
+<body>
+<div class="login" id="login">
+  <h1>Smart Cafe 🔐</h1>
+  <input type="password" id="pw" placeholder="Password" autocomplete="current-password">
+  <button class="btn" id="go">Login</button>
+  <div class="err" id="err"></div>
+</div>
+
+<div id="dash" style="display:none">
+  <header>
+    <h1>📋 Orders</h1>
+    <div class="r"><span id="cnt"></span><button class="sm" id="snd">🔔 On</button><button class="sm" id="out">Logout</button></div>
+  </header>
+  <div class="tabs"><button id="tA" class="on">Active</button><button id="tD">Done</button></div>
+  <div id="list"></div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+let pw=localStorage.getItem('sc_pw')||'',orders=[],seen=new Set(),first=true,tab='active',sound=true,timer;
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const MODE={delivery:'🛵 Delivery',takeaway:'🛍️ Takeaway',dinein:'🍽️ Dine-in'};
+
+function beep(){if(!sound)return;try{const c=new(window.AudioContext||window.webkitAudioContext)();[880,1100,880].forEach((f,i)=>{const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=f;const t=c.currentTime+i*.22;g.gain.setValueAtTime(.25,t);g.gain.exponentialRampToValueAtTime(.001,t+.18);o.start(t);o.stop(t+.18)})}catch(e){}}
+
+async function api(method,body){
+  const r=await fetch('/api/orders',{method,headers:{'Content-Type':'application/json','x-admin-password':pw},body:body?JSON.stringify(body):undefined});
+  if(r.status===401)throw new Error('auth');
+  if(!r.ok)throw new Error('err');
+  return r.json();
+}
+
+async function load(){
+  const d=await api('GET');
+  orders=d.orders;
+  let fresh=false;
+  orders.forEach(o=>{if(!seen.has(o.id)){seen.add(o.id);if(!first&&o.status==='new')fresh=true}});
+  first=false;
+  if(fresh)beep();
+  render();
+}
+
+function render(){
+  const act=orders.filter(o=>o.status!=='done'),dn=orders.filter(o=>o.status==='done');
+  $('cnt').textContent=act.length+' active';
+  $('tA').textContent='Active ('+act.length+')';$('tD').textContent='Done ('+dn.length+')';
+  const list=tab==='active'?act:dn;
+  if(!list.length){$('list').innerHTML='<div class="empty">'+(tab==='active'?'Abhi koi naya order nahi 🙂':'Koi done order nahi')+'</div>';return}
+  $('list').innerHTML=list.map(o=>{
+    const items=o.items.map(i=>`<div class="ln">• ${esc(i.n)} × ${i.q} = ₹${i.p*i.q}</div>`).join('');
+    let meta='';
+    if(o.mode==='delivery')meta+=`📍 ${esc(o.addr)}<br>`;
+    if(o.mode==='dinein')meta+=`👥 ${esc(o.people)} log<br>`;
+    meta+=`⏰ ${esc(o.time)}`;
+    const label=o.status==='new'?'NEW':o.status==='preparing'?'PREPARING':'DONE';
+    const next=o.status==='new'?['preparing','👨‍🍳 Banana shuru']:o.status==='preparing'?['done','✅ Ho gaya']:['new','↩ Wapas'];
+    return `<div class="card ${o.status}">
+      <div class="top"><span class="tag">${label} · ${MODE[o.mode]||''}</span><span class="tm">${new Date(o.ts).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</span></div>
+      <div class="nm">${esc(o.name)}</div>
+      <div style="margin-top:.4rem">${items}</div>
+      <div class="meta">${meta}</div>
+      <div class="tot">Total ₹${o.tot}${o.del?` <small style="font-weight:400;opacity:.7">(delivery ₹${o.del} included)</small>`:''}</div>
+      <div class="act"><button class="go" data-s="${next[0]}" data-id="${esc(o.id)}">${next[1]}</button><button data-del="${esc(o.id)}">🗑 Delete</button></div>
+    </div>`}).join('');
+}
+
+$('list').addEventListener('click',async e=>{
+  const b=e.target.closest('button');if(!b)return;
+  try{
+    if(b.dataset.s){await api('PATCH',{id:b.dataset.id,status:b.dataset.s})}
+    else if(b.dataset.del){if(!confirm('Ye order delete karna hai?'))return;await api('DELETE',{id:b.dataset.del})}
+    await load();
+  }catch(err){alert('Kuch gadbad hui, dobara try karein')}
+});
+
+function setTab(t){tab=t;$('tA').classList.toggle('on',t==='active');$('tD').classList.toggle('on',t==='done');render()}
+$('tA').onclick=()=>setTab('active');$('tD').onclick=()=>setTab('done');
+$('snd').onclick=()=>{sound=!sound;$('snd').textContent=sound?'🔔 On':'🔕 Off';if(sound)beep()};
+
+async function start(){
+  try{
+    await load();
+    localStorage.setItem('sc_pw',pw);
+    $('login').style.display='none';$('dash').style.display='block';
+    clearInterval(timer);timer=setInterval(()=>load().catch(()=>{}),10000);
+  }catch(e){
+    $('err').textContent=e.message==='auth'?'Galat password':'Server se connect nahi ho pa raha (Redis/Env setup check karein)';
+    if(e.message==='auth')localStorage.removeItem('sc_pw');
+  }
+}
+$('go').onclick=()=>{pw=$('pw').value;$('err').textContent='';start()};
+$('pw').addEventListener('keydown',e=>{if(e.key==='Enter')$('go').click()});
+$('out').onclick=()=>{localStorage.removeItem('sc_pw');location.reload()};
+if(pw)start();
+</script>
+</body>
+</html>
